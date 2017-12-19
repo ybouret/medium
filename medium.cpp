@@ -2,7 +2,8 @@
 
 Medium::Medium() : _input(NULL),
                    _inputLength(0),
-                   _inputCompleted(false)
+                   _inputCompleted(false),
+                   _words()
 {
     _input = (char *)malloc(maxInputMemory);
     resetInput();
@@ -18,6 +19,7 @@ void Medium::resetInput()
     _inputCompleted = false;
     memset(_input, 0, maxInputMemory);
     _inputLength = 0;
+    memset(_words, 0, sizeof(_words));
 }
 
 static bool isEOL(const char C)
@@ -51,6 +53,36 @@ void Medium::processSerialInput()
     }
 }
 
+static const char __blanks[] = " \t";
+unsigned Medium::findInputWords(const char *sep)
+{   
+    // initialize loop
+    unsigned count = 0;
+    if (!sep)
+        sep = __blanks;
+
+    //  initiliaze token
+    _words[0] = strtok(_input, sep);
+    if (NULL != _words[0])
+    {
+        count = 1;
+        while (count < maxInputWords)
+        {
+            _words[count] = strtok(NULL, sep);
+            if (NULL == _words[count])
+            {
+                break;
+            }
+            ++count;
+        }
+    }
+    return count;
+}
+
+const char *Medium::getInputWord(const unsigned i) const
+{
+    return _words[i%maxInputWords];
+}
 
 float Medium::Triangle(float t, const float T)
 {
@@ -69,5 +101,5 @@ float Medium::Triangle(float t, const float T)
 float Medium::SineWave(float t, const float T)
 {
     static const float two_pi = 2.0f * (float)M_PI;
-    return sinf( (two_pi*t) / T );
+    return sinf((two_pi * t) / T);
 }
