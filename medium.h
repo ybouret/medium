@@ -16,20 +16,23 @@
 class Medium
 {
 public:
-  static const unsigned maxInputLength = 200;
+  static const unsigned maxInputLength = 255;
   static const unsigned maxInputMemory = maxInputLength + 1;
   static const unsigned maxInputWords = 3;
+  static const unsigned maxOutputLength = 255;
+  static const unsigned maxOutputMemory = maxOutputLength + 1;
 
   //! check an input is ready
-  inline bool inputCompleted() { return _inputCompleted; }
+  inline bool inputCompleted() const { return _inputCompleted; }
 
   //! get read only current input
-  inline const char *input() { return _input; }
+  inline const char *input() const { return _input; }
 
   //! get read only current input length
-  inline unsigned inputLength() { return _inputLength; }
+  inline unsigned inputLength() const { return _inputLength; }
 
-  void processSerialInput(); //!< to be called within serialEvent() function
+  //! to be called within serialEvent() function 
+  void processSerialInput(); 
   void resetInput();         //!< hard reset input status
   //! tokenize input into 0..maxInputArgs
   /**
@@ -37,6 +40,14 @@ public:
    */
   unsigned findInputWords(const char *sep = NULL);
   const char *getInputWord(const unsigned i) const;
+
+  void resetOutput(); //!< clean output
+  inline bool outputIsActive() const { return _outputIsActive; }
+  inline bool outputIsReady() const { return !_outputIsActive; }
+  void processSerialOutput();
+
+  //! print a formatted message, must be outputReady
+  void print(const char *fmt, ...);
 
   //! prepare an object for I/O
   Medium();
@@ -46,10 +57,15 @@ public:
   static float SineWave(float t, const float T);
 
 private:
-  char *_input;          //!< allocated input buffer
-  unsigned _inputLength; //!< current length
-  bool _inputCompleted;  //!< end of line, or max size reached
-  char *_words[maxInputWords];
+  char *_input;                //!< allocated input buffer
+  unsigned _inputLength;       //!< current length
+  bool _inputCompleted;        //!< end of line, or max size reached
+  char *_words[maxInputWords]; //!< split words from input
+
+  char *_output;
+  unsigned _outputLength;
+  unsigned _outputCurrent;
+  bool _outputIsActive;
 
   Medium(const Medium &);
   Medium &operator=(const Medium &);

@@ -3,10 +3,16 @@
 Medium::Medium() : _input(NULL),
                    _inputLength(0),
                    _inputCompleted(false),
-                   _words()
+                   _words(),
+                   _output(NULL),
+                   _outputLength(0),
+                   _outputCurrent(0),
+                   _outputIsActive(false)
 {
     _input = (char *)malloc(maxInputMemory);
+    _output = (char *)malloc(maxOutputMemory);
     resetInput();
+    resetOutput();
 }
 
 Medium::~Medium() throw()
@@ -20,6 +26,14 @@ void Medium::resetInput()
     memset(_input, 0, maxInputMemory);
     _inputLength = 0;
     memset(_words, 0, sizeof(_words));
+}
+
+void Medium::resetOutput()
+{
+    memset(_output, 0, maxOutputMemory);
+    _outputIsActive = false;
+    _outputLength = 0;
+    _outputCurrent = 0;
 }
 
 static bool isEOL(const char C)
@@ -53,9 +67,27 @@ void Medium::processSerialInput()
     }
 }
 
+void Medium::processSerialOutput()
+{
+    if (_outputIsActive)
+    {
+        while (Serial.availableForWrite())
+        {
+            const unsigned toWrite = _outputLength - _outputCurrent;
+            const unsigned written = Serial.write(_output+_outputCurrent,toWrite);
+            _outputCurrent += written;
+            if(_outputCurrent>=_outputLength)
+            {
+                resetOutput();
+                break;
+            }
+        }
+    }
+}
+
 static const char __blanks[] = " \t";
 unsigned Medium::findInputWords(const char *sep)
-{   
+{
     // initialize loop
     unsigned count = 0;
     if (!sep)
@@ -81,7 +113,18 @@ unsigned Medium::findInputWords(const char *sep)
 
 const char *Medium::getInputWord(const unsigned i) const
 {
-    return _words[i%maxInputWords];
+    return _words[i % maxInputWords];
+}
+
+void Medium::print(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    vsnprintf(_output, maxOutputLength, fmt, args);
+    va_end(args);
+    _outputCurrent = 0;
+    _outputLength = strlen(_output);
+    _outputIsActive = (_outputLength>0);
 }
 
 float Medium::Triangle(float t, const float T)
