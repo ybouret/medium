@@ -51,6 +51,7 @@ void Medium::processSerialInput()
     }
 }
 
+
 float Medium::Triangle(float t, const float T)
 {
     const float half = 0.5f * T;
@@ -63,4 +64,10 @@ float Medium::Triangle(float t, const float T)
     {
         return (half - t) / half;
     }
+}
+
+float Medium::SineWave(float t, const float T)
+{
+    static const float two_pi = 2.0f * (float)M_PI;
+    return sinf( (two_pi*t) / T );
 }

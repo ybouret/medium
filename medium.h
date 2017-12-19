@@ -37,6 +37,7 @@ class Medium
     ~Medium() throw();
 
     static float Triangle(float t, const float T);
+    static float SineWave(float t, const float T);
 
   private:
     char *_input;          //!< allocated input buffer
