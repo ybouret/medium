@@ -4,15 +4,21 @@ Medium::Medium() : _input(NULL),
                    _inputLength(0),
                    _inputCompleted(false),
                    _words(),
-                   _output(NULL),
-                   _outputLength(0),
-                   _outputCurrent(0),
-                   _outputIsActive(false)
+                   outputQ(),
+                   outputP(),
+                   nodes(NULL)
 {
     _input = (char *)malloc(maxInputMemory);
-    _output = (char *)malloc(maxOutputMemory);
+    const unsigned long nodesMemory = maxOutputLength * (unsigned long)sizeof(CharNode);
+    nodes = (CharNode *)malloc(nodesMemory);
+    memset(nodes, 0, nodesMemory);
+
+    for (unsigned i = 0; i < maxOutputLength; ++i)
+    {
+        CharNode *node = &nodes[i];
+        outputP.store(node);
+    }
     resetInput();
-    resetOutput();
 }
 
 Medium::~Medium() throw()
@@ -28,20 +34,12 @@ void Medium::resetInput()
     memset(_words, 0, sizeof(_words));
 }
 
-void Medium::resetOutput()
-{
-    memset(_output, 0, maxOutputMemory);
-    _outputIsActive = false;
-    _outputLength = 0;
-    _outputCurrent = 0;
-}
-
 static bool isEOL(const char C)
 {
     return (C == '\n' || C == '\r');
 }
 
-void Medium::processSerialInput()
+void Medium::serialEventCallback()
 {
     while (Serial.available())
     {
@@ -66,7 +64,6 @@ void Medium::processSerialInput()
         }
     }
 }
-
 
 static const char __blanks[] = " \t";
 unsigned Medium::findInputWords(const char *sep)
@@ -101,31 +98,42 @@ const char *Medium::getInputWord(const unsigned i) const
 
 void Medium::print(const char *fmt, ...)
 {
+    char buff[maxOutputLength];
     va_list args;
     va_start(args, fmt);
-    vsnprintf(_output, maxOutputLength, fmt, args);
+    vsnprintf(buff, sizeof(buff) - 1, fmt, args);
     va_end(args);
-    _outputCurrent = 0;
-    _outputLength = strlen(_output);
-    _outputIsActive = (_outputLength > 0);
+    const unsigned len = strlen(buff);
+
+    // make some room
+    while (outputP.size < len)
+    {
+        if (Serial.availableForWrite())
+        {
+            CharNode *node = outputQ.pop_back();
+            Serial.write(&(node->data), 1);
+            outputP.store(node);
+        }
+    }
+
+    // push data
+    for (unsigned i = 0; i < len; ++i)
+    {
+        CharNode *node = outputP.query();
+        node->data = buff[i];
+        outputQ.push_front(node);
+    }
 }
 
-
-void Medium::processSerialOutput()
+void Medium::loopCallback()
 {
-    if (_outputIsActive)
+    while (outputQ.size > 0)
     {
-        while (Serial.availableForWrite())
-        {
-            const unsigned toWrite = _outputLength - _outputCurrent;
-            const unsigned written = Serial.write(_output + _outputCurrent, toWrite);
-            _outputCurrent += written;
-            if (_outputCurrent >= _outputLength)
-            {
-                resetOutput();
-                break;
-            }
-        }
+        if (!Serial.availableForWrite())
+            break;
+        CharNode *node = outputQ.pop_back();
+        Serial.write( &(node->data), 1);
+        outputP.store(node);
     }
 }
 
