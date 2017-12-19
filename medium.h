@@ -18,7 +18,7 @@ class Medium
 public:
   static const unsigned maxInputLength = 255;
   static const unsigned maxInputMemory = maxInputLength + 1;
-  static const unsigned maxInputWords = 3;
+  static const unsigned maxInputWords = 4;
   static const unsigned maxOutputLength = 255;
   static const unsigned maxOutputMemory = maxOutputLength + 1;
 
@@ -31,9 +31,9 @@ public:
   //! get read only current input length
   inline unsigned inputLength() const { return _inputLength; }
 
-  //! to be called within serialEvent() function 
-  void processSerialInput(); 
-  void resetInput();         //!< hard reset input status
+  //! to be called within serialEvent() function
+  void processSerialInput();
+  void resetInput(); //!< hard reset input status
   //! tokenize input into 0..maxInputArgs
   /**
    * \param sep if NULL, blanks are used 
@@ -62,10 +62,10 @@ private:
   bool _inputCompleted;        //!< end of line, or max size reached
   char *_words[maxInputWords]; //!< split words from input
 
-  char *_output;
-  unsigned _outputLength;
-  unsigned _outputCurrent;
-  bool _outputIsActive;
+  char *_output;           //!< allocated output buffer
+  unsigned _outputLength;  //!< output length
+  unsigned _outputCurrent; //!< output current position
+  bool _outputIsActive;    //!< there is something in the output
 
   Medium(const Medium &);
   Medium &operator=(const Medium &);

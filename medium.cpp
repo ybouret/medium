@@ -67,23 +67,6 @@ void Medium::processSerialInput()
     }
 }
 
-void Medium::processSerialOutput()
-{
-    if (_outputIsActive)
-    {
-        while (Serial.availableForWrite())
-        {
-            const unsigned toWrite = _outputLength - _outputCurrent;
-            const unsigned written = Serial.write(_output+_outputCurrent,toWrite);
-            _outputCurrent += written;
-            if(_outputCurrent>=_outputLength)
-            {
-                resetOutput();
-                break;
-            }
-        }
-    }
-}
 
 static const char __blanks[] = " \t";
 unsigned Medium::findInputWords(const char *sep)
@@ -124,7 +107,26 @@ void Medium::print(const char *fmt, ...)
     va_end(args);
     _outputCurrent = 0;
     _outputLength = strlen(_output);
-    _outputIsActive = (_outputLength>0);
+    _outputIsActive = (_outputLength > 0);
+}
+
+
+void Medium::processSerialOutput()
+{
+    if (_outputIsActive)
+    {
+        while (Serial.availableForWrite())
+        {
+            const unsigned toWrite = _outputLength - _outputCurrent;
+            const unsigned written = Serial.write(_output + _outputCurrent, toWrite);
+            _outputCurrent += written;
+            if (_outputCurrent >= _outputLength)
+            {
+                resetOutput();
+                break;
+            }
+        }
+    }
 }
 
 float Medium::Triangle(float t, const float T)
