@@ -30,18 +30,18 @@ class Medium
 
     //! generic doubly linked list
     template <typename NODE>
-    class List
+    class ListOf
     {
       public:
         NODE *head;
         NODE *tail;
         unsigned long size;
 
-        inline explicit List() throw() : head(NULL), tail(NULL), size(0)
+        inline explicit ListOf() throw() : head(NULL), tail(NULL), size(0)
         {
         }
 
-        inline virtual ~List() throw()
+        inline virtual ~ListOf() throw()
         {
         }
 
@@ -131,20 +131,20 @@ class Medium
         }
 
       private:
-        List(const List &);
-        List &operator=(const List &);
+        ListOf(const ListOf &);
+        ListOf &operator=(const ListOf &);
     };
 
     //! generic pool
     template <typename NODE>
-    class Pool
+    class PoolOf
     {
       public:
         NODE *top;
         unsigned long size;
 
-        inline explicit Pool() throw() : top(NULL), size(0) {}
-        inline virtual ~Pool() throw() {}
+        inline explicit PoolOf() throw() : top(NULL), size(0) {}
+        inline virtual ~PoolOf() throw() {}
 
         inline void store(NODE *node) throw()
         {
@@ -166,8 +166,8 @@ class Medium
         }
 
       private:
-        Pool(const Pool &);
-        Pool &operator=(const Pool &);
+        PoolOf(const PoolOf &);
+        PoolOf &operator=(const PoolOf &);
     };
 
     //! generic node
@@ -188,9 +188,9 @@ class Medium
         NodeOf &operator=(const NodeOf &);
     };
 
-    static const unsigned maxInputLength = 255;
-    static const unsigned maxInputMemory = maxInputLength + 1;
-    static const unsigned maxInputWords = 4;
+    static const unsigned maxInputLength = 255;                //!< to process serial input
+    static const unsigned maxInputMemory = maxInputLength + 1; //!< memory, keep and extra '\0'
+    static const unsigned maxInputWords = 4;                   //!< command + (maxInputWords-1) arguments
 
     //! check an input is ready
     inline bool inputCompleted() const { return _inputCompleted; }
@@ -201,15 +201,15 @@ class Medium
     //! get read only current input length
     inline unsigned inputLength() const { return _inputLength; }
 
-    //! to be called within serialEvent() function
-    void serialEventCallback();
-    void resetInput(); //!< hard reset input status
+    void serialEventCallback(); //!< to be called within serialEvent() function
+    void resetInput();          //!< hard reset input status
+
     //! tokenize input into 0..maxInputArgs
     /**
      * \param sep if NULL, blanks are used
      */
-    unsigned splitInputWords(const char *sep = NULL);
-    const char * operator[](const unsigned i) const;
+    unsigned splitInput(const char *sep = NULL);
+    const char *operator[](const unsigned i) const;
 
     //! prepare an object for I/O
     Medium();

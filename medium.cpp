@@ -61,7 +61,7 @@ void Medium::serialEventCallback()
 #endif
 
 static const char __blanks[] = " \t";
-unsigned Medium::splitInputWords(const char *sep)
+unsigned Medium::splitInput(const char *sep)
 {
     // initialize loop
     unsigned count = 0;
