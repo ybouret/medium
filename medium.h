@@ -20,6 +20,8 @@
 #define TSYS2TIME(tmx) (1.0e-6f * ((float)(tmx)))
 #define Medium_GetCurrentTime() TSYS2TIME(TSYS())
 
+#define Medium_streq(lhs, arg) (0 == strcmp(lhs, arg))
+
 class Medium
 {
   public:
