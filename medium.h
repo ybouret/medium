@@ -10,18 +10,23 @@
 #define MEDIUM_ASSERT(EXPR) assert(EXPR)
 #endif
 
-// timing macros
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 //
 // timing macros, GetCurrentTime is in seconds
 //
-//-----------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 #define TSYS() (micros())
 #define TSYS2TIME(tmx) (1.0e-6f * ((float)(tmx)))
 #define Medium_GetCurrentTime() TSYS2TIME(TSYS())
 
 #define Medium_streq(lhs, arg) (0 == strcmp(lhs, arg))
 
+
+//------------------------------------------------------------------------------
+//
+// Enclosing class
+//
+//------------------------------------------------------------------------------
 class Medium
 {
   public:
@@ -30,23 +35,29 @@ class Medium
     MEDIUM_ASSERT(NULL == node->next); \
     MEDIUM_ASSERT(NULL == node->prev)
 
+    //__________________________________________________________________________
+    //
     //! generic doubly linked list
+    //__________________________________________________________________________
     template <typename NODE>
     class ListOf
     {
       public:
-        NODE *head;
-        NODE *tail;
-        unsigned long size;
+        NODE         *head; //!< first item
+        NODE         *tail; //!< last item
+        unsigned long size; //!< number or items
 
+        //! default constructor
         inline explicit ListOf() throw() : head(NULL), tail(NULL), size(0)
         {
         }
 
+        //! destructor
         inline virtual ~ListOf() throw()
         {
         }
 
+        //! push a new valid node at the back of the list
         inline void push_back(NODE *node) throw()
         {
             MEDIUM_CHECK_NODE(node);
@@ -63,6 +74,7 @@ class Medium
             ++size;
         }
 
+        //! push a new valid node at the front of the list
         inline void push_front(NODE *node) throw()
         {
             MEDIUM_CHECK_NODE(node);
@@ -79,6 +91,7 @@ class Medium
             ++size;
         }
 
+        //! remove the tail node
         inline NODE *pop_back() throw()
         {
             NODE *node = tail;
@@ -105,6 +118,7 @@ class Medium
             return node;
         }
 
+        //! remove the front node
         inline NODE *pop_front() throw()
         {
             NODE *node = head;
@@ -133,16 +147,19 @@ class Medium
         }
 
       private:
-        ListOf(const ListOf &);
-        ListOf &operator=(const ListOf &);
+        ListOf(const ListOf &);            //!< no copy
+        ListOf &operator=(const ListOf &); //!< no assign
     };
 
+    //__________________________________________________________________________
+    //
     //! generic pool
+    //__________________________________________________________________________
     template <typename NODE>
     class PoolOf
     {
       public:
-        NODE *top;
+        NODE         *top;
         unsigned long size;
 
         inline explicit PoolOf() throw() : top(NULL), size(0) {}
@@ -168,8 +185,8 @@ class Medium
         }
 
       private:
-        PoolOf(const PoolOf &);
-        PoolOf &operator=(const PoolOf &);
+        PoolOf(const PoolOf &);            //!< no copy
+        PoolOf &operator=(const PoolOf &); //!< no assign
     };
 
     //! generic node
@@ -179,7 +196,7 @@ class Medium
       public:
         NodeOf *next;
         NodeOf *prev;
-        T data;
+        T       data;
 
         inline NodeOf() throw() : next(NULL), prev(NULL), data() {}
         inline NodeOf(const T &args) throw() : next(NULL), prev(NULL), data(args) {}
@@ -190,6 +207,11 @@ class Medium
         NodeOf &operator=(const NodeOf &);
     };
 
+    //__________________________________________________________________________
+    //
+    // functions to read input through serial interface
+    //__________________________________________________________________________
+    
     static const unsigned maxInputLength = 255;                //!< to process serial input
     static const unsigned maxInputMemory = maxInputLength + 1; //!< memory, keep and extra '\0'
     static const unsigned maxInputWords = 4;                   //!< command + (maxInputWords-1) arguments
@@ -221,10 +243,10 @@ class Medium
     static float SineWave(float t, const float T);
 
   private:
-    char *_input;                //!< allocated input buffer
-    unsigned _inputLength;       //!< current length
-    bool _inputCompleted;        //!< end of line, or max size reached
-    char *_words[maxInputWords]; //!< split words from input
+    char *   _input;                //!< allocated input buffer
+    unsigned _inputLength;          //!< current length
+    bool     _inputCompleted;       //!< end of line, or max size reached
+    char *   _words[maxInputWords]; //!< split words from input
 
     Medium(const Medium &);
     Medium &operator=(const Medium &);
