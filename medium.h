@@ -222,10 +222,9 @@ class Medium
     //
     // functions to read input through serial interface
     //__________________________________________________________________________
-    
     static const unsigned maxInputLength = 255;                //!< to process serial input
     static const unsigned maxInputMemory = maxInputLength + 1; //!< memory, keep and extra '\0'
-    static const unsigned maxInputWords  = 4;                   //!< command + (maxInputWords-1) arguments
+    static const unsigned maxInputWords  = 4;                  //!< command + (maxInputWords-1) arguments
 
     //! check an input is ready
     inline bool inputCompleted() const { return _inputCompleted; }
@@ -237,15 +236,31 @@ class Medium
     inline unsigned inputLength() const { return _inputLength; }
 
     void serialEventCallback(); //!< to be called within serialEvent() function
-    void resetInput();          //!< hard reset input status
+    void resetInput();          //!< hard reset input status, after an inputCompleted
 
     //! tokenize input into 0..maxInputArgs
     /**
      * \param sep if NULL, blanks are used
      */
     unsigned splitInput(const char *sep = NULL);
+    
+    //! get last parsed type
     const char *operator[](const unsigned i) const;
 
+    typedef void (*Callback)(const char *value);
+    struct Parameter
+    {
+        const char *name;
+        Callback    proc;
+    };
+    
+    //! check completed, split default, and call proc if exists
+    void processInput(const Parameter *parameters,
+                      const unsigned   num_params);
+    
+#define MEDIUM_PARAM(NAME)       #NAME, on_##NAME
+#define MEDIUM_PARAMETERS(TABLE) TABLE,sizeof(TABLE)/sizeof(TABLE[0])
+    
     //! prepare an object for I/O
     Medium();
     
@@ -261,9 +276,14 @@ class Medium
     //! sine wave
     static float SineWave(float t, const float T);
     
-    //!
+    //! CosWave
     static float CosWave(float t, const float T);
     
+    
+    //__________________________________________________________________________
+    //
+    // convert a 10-bits analog input into a 0..voltage value
+    //__________________________________________________________________________
     class AnalogReader
     {
     public:
@@ -280,13 +300,13 @@ class Medium
     };
     
   private:
-    char *   _input;                //!< allocated input buffer
-    unsigned _inputLength;          //!< current length
-    bool     _inputCompleted;       //!< end of line, or max size reached
-    char *   _words[maxInputWords]; //!< split words from input
-
-    Medium(const Medium &);
-    Medium &operator=(const Medium &);
+    char *    _input;                //!< allocated input buffer
+    unsigned  _inputLength;          //!< current length
+    bool      _inputCompleted;       //!< end of line, or max size reached
+    char *    _words[maxInputWords]; //!< split words from input
+    
+    MEDIUM_DISABLE_COPY_AND_ASSIGN(Medium);
+    
 };
 
 #endif

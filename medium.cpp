@@ -6,9 +6,9 @@
 #endif
 
 Medium::Medium() : _input(NULL),
-                   _inputLength(0),
-                   _inputCompleted(false),
-                   _words()
+_inputLength(0),
+_inputCompleted(false),
+_words()
 {
     _input = (char *)malloc(maxInputMemory);
     resetInput();
@@ -43,7 +43,7 @@ void Medium::serialEventCallback()
         {
             // add it to the input string if available!
             _input[_inputLength++] = ch;
-
+            
             // if the incoming character is a newline, set a flag so the main loop can
             // do something about it:
             if (ch == '\n' || _inputLength >= maxInputLength)
@@ -67,7 +67,7 @@ unsigned Medium::splitInput(const char *sep)
     unsigned count = 0;
     if (!sep)
         sep = __blanks;
-
+    
     //  initiliaze token
     _words[0] = strtok(_input, sep);
     if (NULL != _words[0])
@@ -85,6 +85,32 @@ unsigned Medium::splitInput(const char *sep)
     }
     return count;
 }
+
+void Medium::processInput(const Parameter *parameters,
+                          const unsigned   num_params)
+{
+    if( !inputCompleted() ) return;
+   
+    if(2==splitInput(NULL))
+    {
+        const Medium &self = *this;
+        const char   *cmd  = self[0];
+        for(unsigned i=0;i<num_params;++i)
+        {
+            const Parameter &info = parameters[i];
+            if( Medium_streq(info.name,cmd) )
+            {
+                const char *value_string = self[1];
+                info.proc(value_string);
+                goto END_INPUT;
+            }
+        }
+    }
+    
+END_INPUT:
+    resetInput();
+}
+
 
 const char *Medium::operator[](const unsigned i) const
 {
