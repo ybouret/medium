@@ -21,6 +21,15 @@
 
 #define Medium_streq(lhs, arg) (0 == strcmp(lhs, arg))
 
+//------------------------------------------------------------------------------
+//
+// C++ macros
+//
+//------------------------------------------------------------------------------
+#define MEDIUM_DISABLE_COPY(CLASS)   private: CLASS(const CLASS &)
+#define MEDIUM_DISABLE_ASSIGN(CLASS) private: CLASS & operator=( const CLASS &)
+#define MEDIUM_DISABLE_COPY_AND_ASSIGN(CLASS) \
+MEDIUM_DISABLE_COPY(CLASS); MEDIUM_DISABLE_ASSIGN(CLASS)
 
 //------------------------------------------------------------------------------
 //
@@ -147,8 +156,7 @@ class Medium
         }
 
       private:
-        ListOf(const ListOf &);            //!< no copy
-        ListOf &operator=(const ListOf &); //!< no assign
+        MEDIUM_DISABLE_COPY_AND_ASSIGN(ListOf);
     };
 
     //__________________________________________________________________________
@@ -159,12 +167,13 @@ class Medium
     class PoolOf
     {
       public:
-        NODE         *top;
-        unsigned long size;
+        NODE         *top;   //!< the top Node
+        unsigned long size;  //!< number of stored nodes
 
         inline explicit PoolOf() throw() : top(NULL), size(0) {}
         inline virtual ~PoolOf() throw() {}
 
+        //! push a valid node ont the top
         inline void store(NODE *node) throw()
         {
             MEDIUM_CHECK_NODE(node);
@@ -173,6 +182,7 @@ class Medium
             ++size;
         }
 
+        //! pop the last stored node
         inline NODE *query() throw()
         {
             MEDIUM_ASSERT(size > 0);
@@ -185,11 +195,13 @@ class Medium
         }
 
       private:
-        PoolOf(const PoolOf &);            //!< no copy
-        PoolOf &operator=(const PoolOf &); //!< no assign
+        MEDIUM_DISABLE_COPY_AND_ASSIGN(PoolOf);
     };
 
-    //! generic node
+    //__________________________________________________________________________
+    //
+    //! generic data node
+    //__________________________________________________________________________
     template <typename T>
     class NodeOf
     {
@@ -203,8 +215,7 @@ class Medium
         inline ~NodeOf() throw() {}
 
       private:
-        NodeOf(const NodeOf &);
-        NodeOf &operator=(const NodeOf &);
+        MEDIUM_DISABLE_COPY_AND_ASSIGN(NodeOf);
     };
 
     //__________________________________________________________________________
@@ -214,7 +225,7 @@ class Medium
     
     static const unsigned maxInputLength = 255;                //!< to process serial input
     static const unsigned maxInputMemory = maxInputLength + 1; //!< memory, keep and extra '\0'
-    static const unsigned maxInputWords = 4;                   //!< command + (maxInputWords-1) arguments
+    static const unsigned maxInputWords  = 4;                   //!< command + (maxInputWords-1) arguments
 
     //! check an input is ready
     inline bool inputCompleted() const { return _inputCompleted; }
@@ -237,11 +248,37 @@ class Medium
 
     //! prepare an object for I/O
     Medium();
+    
+    //! cleanup thru destructor
     ~Medium() throw();
 
+    //! repeating triangle (-T/2,0) -> (0,1) -> (T/2,0)
     static float Triangle(float t, const float T);
+    
+    //! triangle wave (-T/2,-1) -> (0,1) -> (T/2,1)
+    static float TriangleWave(float t, const float T);
+    
+    //! sine wave
     static float SineWave(float t, const float T);
-
+    
+    //!
+    static float CosWave(float t, const float T);
+    
+    class AnalogReader
+    {
+    public:
+        const float conversion_factor; //!< voltage/1023.0f
+        
+        AnalogReader(const float voltage) throw();
+        AnalogReader(const AnalogReader &) throw();
+        virtual ~AnalogReader() throw();
+        
+        float operator()(const int PIN) const throw();
+        
+    private:
+        MEDIUM_DISABLE_ASSIGN(AnalogReader);
+    };
+    
   private:
     char *   _input;                //!< allocated input buffer
     unsigned _inputLength;          //!< current length

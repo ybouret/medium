@@ -105,8 +105,43 @@ float Medium::Triangle(float t, const float T)
     }
 }
 
+float Medium::TriangleWave(float t, const float T)
+{
+    const float tri = Triangle(t,T);
+    return (tri+tri-1.0f);
+}
+
+
 float Medium::SineWave(float t, const float T)
 {
     static const float two_pi = 2.0f * (float)M_PI;
     return sinf((two_pi * t) / T);
 }
+
+float Medium::CosWave(float t, const float T)
+{
+    static const float two_pi = 2.0f * (float)M_PI;
+    return cosf((two_pi * t) / T);
+}
+
+Medium:: AnalogReader:: AnalogReader( const float voltage ) throw() :
+conversion_factor(voltage/1023.0f)
+{
+}
+
+Medium:: AnalogReader:: AnalogReader( const AnalogReader &other) throw() :
+conversion_factor(other.conversion_factor)
+{
+}
+
+
+Medium:: AnalogReader:: ~AnalogReader() throw()
+{
+}
+
+#if !defined(MEDIUM_TEST)
+float Medium::AnalogReader:: operator()(const int PIN) const throw()
+{
+    return conversion_factor * float(analogRead(PIN));
+}
+#endif
