@@ -245,12 +245,12 @@ class Medium
     unsigned splitInput(const char *sep = NULL);
     
     //! get last parsed type
-    const char *operator[](const unsigned i) const;
+    const char *getField(const unsigned i) const;
 
     typedef void (*Callback)(const char *value);
     struct Parameter
     {
-        const char *name;
+        const char  name[16];
         Callback    proc;
     };
     
@@ -270,15 +270,14 @@ class Medium
     //! repeating triangle (-T/2,0) -> (0,1) -> (T/2,0)
     static float Triangle(float t, const float T);
     
-    //! triangle wave (-T/2,-1) -> (0,1) -> (T/2,1)
+    //! Triangle wave (-T/2,-1) -> (0,1) -> (T/2,1)
     static float TriangleWave(float t, const float T);
-    
+
+    //! CosWave:  (-T/2,-1) -> (0,1) -> (T/2,1)
+    static float CosWave(float t, const float T);
+
     //! sine wave
     static float SineWave(float t, const float T);
-    
-    //! CosWave
-    static float CosWave(float t, const float T);
-    
     
     //__________________________________________________________________________
     //

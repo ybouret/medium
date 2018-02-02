@@ -65,7 +65,7 @@ unsigned Medium::splitInput(const char *sep)
 {
     // initialize loop
     unsigned count = 0;
-    if (!sep)
+    if (NULL==sep)
         sep = __blanks;
     
     //  initiliaze token
@@ -93,14 +93,13 @@ void Medium::processInput(const Parameter *parameters,
    
     if(2==splitInput(NULL))
     {
-        const Medium &self = *this;
-        const char   *cmd  = self[0];
+        const char   *cmd  = getField(0);
         for(unsigned i=0;i<num_params;++i)
         {
             const Parameter &info = parameters[i];
             if( Medium_streq(info.name,cmd) )
             {
-                const char *value_string = self[1];
+                const char *value_string = getField(1);
                 info.proc(value_string);
                 goto END_INPUT;
             }
@@ -112,7 +111,7 @@ END_INPUT:
 }
 
 
-const char *Medium::operator[](const unsigned i) const
+const char *Medium:: getField(const unsigned i) const
 {
     return _words[i % maxInputWords];
 }
