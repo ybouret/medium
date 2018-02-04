@@ -19,7 +19,8 @@
 #define TSYS2TIME(tmx) (1.0e-6f * ((float)(tmx)))
 #define Medium_GetCurrentTime() TSYS2TIME(TSYS())
 
-#define Medium_streq(lhs, arg) (0 == strcmp(lhs, arg))
+#define Medium_streq(lhs, arg)   (0 == strcmp(lhs, arg))
+#define Medium_streq_P(lhs, arg) (0 == strcmp_P(lhs, arg))
 
 //------------------------------------------------------------------------------
 //
@@ -250,15 +251,15 @@ class Medium
     typedef void (*Callback)(const char *value);
     struct Parameter
     {
-        const char  name[16];
-        Callback    proc;
+        Callback      proc;
+        const char   *name;
     };
     
     //! check completed, split default, and call proc if exists
     void processInput(const Parameter *parameters,
                       const unsigned   num_params);
     
-#define MEDIUM_PARAM(NAME)       #NAME, on_##NAME
+#define MEDIUM_PARAM(NAME)       on_##NAME,#NAME
 #define MEDIUM_PARAMETERS(TABLE) TABLE,sizeof(TABLE)/sizeof(TABLE[0])
     
     //! prepare an object for I/O
